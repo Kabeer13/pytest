@@ -45,3 +45,15 @@ The browser dashboard calls a Django endpoint that accepts only fixed test suite
 - `pokemon/tests/`: unit, API, mocking, validation, HTTP method and runner tests
 - `templates/`: game-style web pages
 - `static/`: CSS and JavaScript
+
+
+## Online Pytest Control Centre
+The public dashboard uses an allow-listed GitHub Actions workflow instead of starting pytest inside the Render web server. Tests run on a separate GitHub-hosted runner; the report artifact is short-lived.
+
+Configure these environment variables on the Render web service:
+- `GITHUB_ACTIONS_TOKEN`: a fine-grained personal access token limited to this repository, with **Actions: Read and write** permission.
+- `POKETEST_RUNNER_ACCESS_CODE`: a long, random code shared only with people allowed to trigger test runs.
+
+The GitHub token remains on the Django server and is never included in frontend JavaScript. The dashboard accepts only the four fixed test suites, validates the access code, and applies a 30-second per-session cooldown. GitHub Actions execution is defined in `.github/workflows/pytest-remote.yml`.
+
+For local development, keep `DEBUG=True`; the local test runner executes pytest directly with a timeout. On Render, keep `DEBUG=False`; the online dashboard dispatches the isolated GitHub Actions job.
