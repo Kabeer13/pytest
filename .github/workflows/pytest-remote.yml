@@ -1,0 +1,97 @@
+name: PokéTest Remote Pytest
+run-name: PokéTest ${{ inputs.request_id }} / ${{ inputs.suite }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      suite:
+        description: Test suite to execute
+        required: true
+        type: choice
+        options:
+          - all
+          - unit
+          - api
+          - mocks
+      request_id:
+        description: Dashboard request identifier
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Check out project
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run selected pytest suite
+        env:
+          SUITE: ${{ inputs.suite }}
+        shell: bash
+        run: |
+          set +e
+          case "$SUITE" in
+            all) TEST_PATHS=("pokemon/tests") ;;
+            unit) TEST_PATHS=("pokemon/tests/test_utils.py" "pokemon/tests/test_validation.py") ;;
+            api) TEST_PATHS=("pokemon/tests/test_api.py" "pokemon/tests/test_http_methods.py" "pokemon/tests/test_runner.py") ;;
+            mocks) TEST_PATHS=("pokemon/tests/test_services.py") ;;
+            *) echo "Unsupported test suite"; exit 2 ;;
+          esac
+          START_TIME=$(date +%s)
+          python -m pytest "${TEST_PATHS[@]}" -q --tb=short --cov=pokemon --cov-report=json:coverage.json --cov-report=term-missing 2>&1 | tee pytest-output.txt
+          TEST_EXIT=${PIPESTATUS[0]}
+          END_TIME=$(date +%s)
+          TEST_DURATION=$((END_TIME - START_TIME))
+          TEST_EXIT="$TEST_EXIT" TEST_DURATION="$TEST_DURATION" python - <<'PY'
+          import json, os, re
+          from pathlib import Path
+          output = Path("pytest-output.txt").read_text(encoding="utf-8", errors="replace")
+          summary = {}
+          for key, pattern in {
+              "passed": r"(\d+) passed",
+              "failed": r"(\d+) failed",
+              "errors": r"(\d+) error",
+              "skipped": r"(\d+) skipped",
+          }.items():
+              match = re.search(pattern, output)
+              summary[key] = int(match.group(1)) if match else 0
+          coverage = None
+          try:
+              coverage = round(json.loads(Path("coverage.json").read_text())["totals"]["percent_covered"], 1)
+          except (OSError, KeyError, TypeError, json.JSONDecodeError):
+              pass
+          Path("result.json").write_text(json.dumps({
+              "summary": summary,
+              "coverage": coverage,
+              "duration": int(os.environ["TEST_DURATION"]),
+              "exit_code": int(os.environ["TEST_EXIT"])
+          }), encoding="utf-8")
+          PY
+          exit "$TEST_EXIT"
+
+      - name: Upload pytest results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: poketest-results-${{ inputs.request_id }}
+          path: |
+            pytest-output.txt
+            coverage.json
+            result.json
+          if-no-files-found: warn
+          retention-days: 2
