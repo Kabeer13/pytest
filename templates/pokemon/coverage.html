@@ -1,15 +1,15 @@
 {% extends "base.html" %}
 {% block title %}Pytest Control Centre — PokéTest{% endblock %}
 {% block content %}
-<section class="page-hero"><span class="eyebrow">DEVELOPER CONSOLE</span><h1>Pytest <em>Control Centre.</em></h1><p>Run the real Django test suite from this page. Results and coverage return from GitHub Actions.</p></section>
+<section class="page-hero"><span class="eyebrow">DEVELOPER CONSOLE</span><h1>Pytest <em>Control Centre.</em></h1><p>Run the real Django test suite from this page. Run the actual test suite on the hosted Django backend and inspect its results and coverage.</p></section>
 <section class="control">
 <div class="bar"><div><span class="eyebrow">AUTOMATED TEST EXECUTION</span><h2>Choose your test mission</h2></div><b id="runner-status">● SYSTEM IDLE</b></div>
 <div class="suites"><button class="suite selected" data-suite="all">⚡ <b>Run all tests</b><small>Complete suite</small></button><button class="suite" data-suite="unit">🧩 <b>Unit tests</b><small>Utilities & validation</small></button><button class="suite" data-suite="api">🌐 <b>API tests</b><small>Django endpoints</small></button><button class="suite" data-suite="mocks">🎭 <b>Mock tests</b><small>External API behaviour</small></button></div>
-<div class="runner-access"><label for="runner-access-code">TRAINER ACCESS CODE</label><input id="runner-access-code" type="password" autocomplete="current-password" placeholder="Enter the project's runner access code"><small>Only the server holds the GitHub credential. This code authorizes you to start a test run.</small></div>
+<div class="runner-access"><label for="runner-access-code">TRAINER ACCESS CODE</label><input id="runner-access-code" type="password" autocomplete="current-password" placeholder="Enter the project's runner access code"><small>The server checks this code before starting a test run. Never publish or commit it.</small></div>
 <div class="runrow"><b id="selected-suite-label">Complete test suite</b><button id="run-tests-btn" class="btn">▶ RUN TESTS</button></div>
 <div class="metrics"><div><strong id="metric-passed">—</strong><small>PASSED</small></div><div><strong id="metric-failed">—</strong><small>FAILED</small></div><div><strong id="metric-coverage">—</strong><small>COVERAGE</small></div><div><strong id="metric-duration">—</strong><small>TIME</small></div></div>
 <div class="terminal"><header>● ● ●　PYTEST LIVE OUTPUT <span id="terminal-state">WAITING</span></header><pre id="pytest-output">Choose a test mission, enter your trainer access code and press RUN TESTS.</pre></div>
-<p class="note">Online tests run in an isolated GitHub Actions job, not in the public Django process. Test suites are allow-listed and requests are rate-limited.</p>
+<p class="note">Hosted execution is protected by a private trainer access code, allow-listed test suites, CSRF protection, a 30-second cooldown, a concurrency lock and a 60-second timeout. Keep the access code secret.</p>
 </section>
 <section class="lessons"><h2>What coverage does not tell you</h2><p>Coverage measures executed code, not correctness. A line can run without a meaningful assertion. Use reports to find gaps, then write tests for expected, invalid and failure behaviour.</p></section>
 <form id="csrf-form" class="hidden">{% csrf_token %}</form>
