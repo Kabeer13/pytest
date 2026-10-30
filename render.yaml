@@ -4,10 +4,12 @@ services:
     runtime: python
     plan: free
     buildCommand: bash build.sh
-    startCommand: gunicorn config.wsgi:application
+    startCommand: gunicorn config.wsgi:application --timeout 75
     healthCheckPath: /
     envVars:
       - key: SECRET_KEY
         generateValue: true
+      - key: POKETEST_RUNNER_ACCESS_CODE
+        sync: false
       - key: PYTHON_VERSION
         value: 3.12.8
