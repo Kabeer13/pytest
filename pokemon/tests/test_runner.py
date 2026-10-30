@@ -13,8 +13,9 @@ def test_runner_rejects_unknown_suite(client):
     assert response.status_code == 400
 
 @pytest.mark.django_db
-def test_runner_disabled_when_debug_is_false(client):
+def test_remote_runner_requires_configuration_when_debug_is_false(client):
     with override_settings(DEBUG=False):
         response = client.post("/api/run-tests/", data=json.dumps({"suite": "all"}),
                                content_type="application/json")
-    assert response.status_code == 403
+    assert response.status_code == 503
+    assert "not configured" in response.json()["error"].lower()
