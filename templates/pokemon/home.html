@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}PokéTest Arena — Unlock{% endblock %}
+{% block content %}
+<section id="gate-screen" class="gate-screen"><div class="gate-card">
+<div class="emblem">⚡</div><span class="eyebrow">TRAINER ACCESS PROTOCOL</span>
+<h1>Prove your<br><em>testing skills.</em></h1>
+<p>Answer three quick questions to unlock the PokéTest Arena.</p>
+<div class="progress"><span id="gate-progress-bar"></span></div>
+<div class="gate-meta"><span id="gate-step">QUESTION 01 / 03</span><span id="gate-score">BADGES 0 / 3</span></div>
+<div id="gate-question"></div><div id="gate-options" class="options"></div>
+<div id="gate-feedback" class="feedback"></div><button id="gate-next" class="btn" disabled>Check answer</button>
+</div><div class="gate-pokemon"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png" alt="Pikachu"><b>PIKACHU IS GUARDING THE GATE</b></div></section>
+<section id="arena-screen" class="hidden"><section class="hero"><div><span class="eyebrow">ACCESS GRANTED · WELCOME TRAINER</span><h1>Gotta test<br><em>’em all.</em></h1><p>Catch bugs before they escape. Search Pokémon, inspect pytest checks and train your testing skills.</p><a class="btn" href="/lab/">Enter Pokédex Arena →</a></div><img class="hero-pokemon" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png" alt="Pikachu"></section>
+<section class="cards"><a href="/lab/"><b>🔎 Pokédex Search</b><p>Search by name or #013.</p></a><a href="/lab/#pytest-arcade"><b>🧪 Pytest Arcade</b><p>Earn badges in testing challenges.</p></a><a href="/coverage/"><b>🏆 Coverage Vault</b><p>Run the real test suite.</p></a></section></section>
+{% endblock %}

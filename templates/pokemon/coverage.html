@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Pytest Control Centre — PokéTest{% endblock %}
+{% block content %}
+<section class="page-hero"><span class="eyebrow">DEVELOPER CONSOLE</span><h1>Pytest <em>Control Centre.</em></h1><p>Run the real Django test suite from this page. Inspect results and actual code coverage.</p></section>
+<section class="control">
+<div class="bar"><div><span class="eyebrow">AUTOMATED TEST EXECUTION</span><h2>Choose your test mission</h2></div><b id="runner-status">● SYSTEM IDLE</b></div>
+<div class="suites"><button class="suite selected" data-suite="all">⚡ <b>Run all tests</b><small>Complete suite</small></button><button class="suite" data-suite="unit">🧩 <b>Unit tests</b><small>Utilities & validation</small></button><button class="suite" data-suite="api">🌐 <b>API tests</b><small>Django endpoints</small></button><button class="suite" data-suite="mocks">🎭 <b>Mock tests</b><small>External API behaviour</small></button></div>
+<div class="runrow"><b id="selected-suite-label">Complete test suite</b><button id="run-tests-btn" class="btn">▶ RUN TESTS</button></div>
+<div class="metrics"><div><strong id="metric-passed">—</strong><small>PASSED</small></div><div><strong id="metric-failed">—</strong><small>FAILED</small></div><div><strong id="metric-coverage">—</strong><small>COVERAGE</small></div><div><strong id="metric-duration">—</strong><small>TIME</small></div></div>
+<div class="terminal"><header>● ● ●　PYTEST LIVE OUTPUT <span id="terminal-state">WAITING</span></header><pre id="pytest-output">Select a test mission and press RUN TESTS.</pre></div>
+<p class="note">Local classroom runner: Django invokes a fixed allow-listed pytest suite with shell=False and a 90-second timeout. It is disabled when DEBUG=False. Do not expose this development runner publicly.</p>
+</section>
+<section class="lessons"><h2>What coverage does not tell you</h2><p>Coverage measures executed code, not correctness. A line can run without a meaningful assertion. Use reports to find gaps, then write tests for expected, invalid and failure behaviour.</p></section>
+<form id="csrf-form" class="hidden">{% csrf_token %}</form>
+{% endblock %}

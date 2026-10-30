@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Learn Testing — PokéTest{% endblock %}
+{% block content %}
+<section class="page-hero"><span class="eyebrow">TRAINING GUIDE</span><h1>Learn to test<br><em>with confidence.</em></h1></section>
+<section class="lessons">
+<article><span>01 · TEST STRATEGY</span><h2>The testing pyramid</h2><p>A healthy suite contains many fast unit tests, fewer integration tests and a smaller number of end-to-end tests.</p><div class="pyramid"><b>END-TO-END</b><b>INTEGRATION</b><b>UNIT TESTS</b></div></article>
+<article><span>02 · TEST TYPES</span><h2>Unit vs integration</h2><p><b>Unit tests</b> verify one function in isolation. <b>Integration tests</b> verify that components such as a Django route, view and JSON response work together.</p><pre>assert format_pokemon_name("pikachu") == "Pikachu"</pre></article>
+<article><span>03 · TEST DATA</span><h2>Fixtures and mocks</h2><p>Fixtures provide reusable setup and data. Mocks replace dependencies such as external HTTP calls with predictable test doubles.</p><pre>@patch("pokemon.services.requests.get")</pre></article>
+<article><span>04 · MEASUREMENT</span><h2>What coverage cannot tell you</h2><p>Coverage shows which code ran. It does not prove correctness, meaningful assertions, complete requirements, security or performance.</p></article>
+</section>
+{% endblock %}

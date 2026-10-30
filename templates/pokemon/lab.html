@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Pokédex Arena — PokéTest{% endblock %}
+{% block content %}
+<section class="page-hero"><span class="eyebrow">TRAINER FIELD TERMINAL</span><h1>Pokédex <em>Arena.</em></h1><p>Search a name or National Pokédex number: Pikachu, 25, or #013.</p></section>
+<section class="panel"><div class="search"><input id="pokemon-input" value="#025" placeholder="Name, number or #013"><button id="search-button" class="btn">Find Pokémon</button></div>
+<div class="quick"><button data-pokemon="1">#001 Bulbasaur</button><button data-pokemon="25">#025 Pikachu</button><button data-pokemon="133">#133 Eevee</button><button data-pokemon="150">#150 Mewtwo</button></div>
+<p id="api-status">Pokédex ready.</p><div id="pokemon-result" class="result hidden"></div>
+<section id="lookup-tests" class="hidden"><h2>🧪 Pytest field report</h2><p>Automated pytest cases covering the lookup:</p><div id="lookup-test-list"></div></section></section>
+<section id="pytest-arcade" class="arcade"><span class="eyebrow">BONUS STAGE</span><h2>Pytest Arcade</h2><p id="arcade-question">Which pytest feature provides reusable test setup?</p><div id="arcade-options" class="options"></div><p id="arcade-feedback"></p><b id="arcade-score">BADGES 0 / 3</b><button id="arcade-next" class="btn" disabled>Next challenge</button></section>
+{% endblock %}
