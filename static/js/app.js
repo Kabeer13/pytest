@@ -27,7 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if(arcade){const rounds=[{q:"Which pytest feature provides reusable setup?",a:["Mocks","Fixtures","Coverage"],c:"Fixtures"},{q:"What replaces a real API in an isolated test?",a:["Mock","Migration","Template"],c:"Mock"},{q:"What does pytest-cov report?",a:["Executed code coverage","Site visitors","Page speed"],c:"Executed code coverage"}];let i=0,score=0,done=false;const q=document.getElementById("arcade-question"),fb=document.getElementById("arcade-feedback"),next=document.getElementById("arcade-next");function draw(){done=false;next.disabled=true;q.textContent=rounds[i].q;arcade.innerHTML="";rounds[i].a.forEach(a=>{let b=document.createElement("button");b.textContent=a;b.onclick=()=>{if(done)return;done=true;if(a===rounds[i].c)score++;fb.textContent=a===rounds[i].c?"🏅 Correct!":"Correct answer: "+rounds[i].c;document.getElementById("arcade-score").textContent="BADGES "+score+" / 3";next.disabled=false;};arcade.appendChild(b);});}next.onclick=()=>{if(i<2){i++;draw();}else{fb.textContent="Challenge complete! You earned "+score+" / 3 badges.";next.disabled=true;}};draw();}
   const run=document.getElementById("run-tests-btn");
   if(run){
-    let suite="all", pollTimer=null;
+    let suite="all";
     const labels={all:"Complete test suite",unit:"Unit tests",api:"Django API tests",mocks:"Mock and external API tests"};
     const out=document.getElementById("pytest-output"),status=document.getElementById("runner-status");
     const metric=(key,value)=>{document.getElementById("metric-"+key).textContent=value;};
@@ -36,47 +36,37 @@ document.addEventListener("DOMContentLoaded", () => {
       document.querySelectorAll(".suite").forEach(x=>x.classList.toggle("selected",x===b));
       document.getElementById("selected-suite-label").textContent=labels[suite];
     });
-    const csrf=()=>document.querySelector("#csrf-form [name=csrfmiddlewaretoken]")?.value||"";
-    async function poll(id,n=0){
-      if(n>120){out.textContent="Still running after 10 minutes. Check GitHub Actions.";run.disabled=false;run.textContent="▶ RUN TESTS";return;}
-      try{
-        const r=await fetch("/api/run-tests/status/"+encodeURIComponent(id)+"/"),d=await r.json();
-        status.textContent=d.status==="queued"?"● QUEUED":d.status==="in_progress"?"● TESTS RUNNING":d.status==="completed"?(d.passed_run?"● ALL CHECKS PASSED":"● RUN FINISHED · REVIEW OUTPUT"):"● CHECKING";
-        document.getElementById("terminal-state").textContent=(d.status||"").toUpperCase();
-        if(d.status==="completed"){
-          out.textContent=d.output||("Run conclusion: "+d.conclusion+". "+(d.run_url||""));
-          metric("passed",d.summary?.passed??"—");
-          metric("failed",(d.summary?.failed||0)+(d.summary?.errors||0));
-          metric("coverage",d.coverage==null?"N/A":d.coverage+"%");
-          metric("duration",d.duration==null?"—":d.duration+"s");
-          run.disabled=false;run.textContent="▶ RUN TESTS";return;
-        }
-        out.textContent="GitHub Actions is "+(d.status||"starting")+". Checking again in 5 seconds…";
-        pollTimer=setTimeout(()=>poll(id,n+1),5000);
-      }catch(e){out.textContent="Could not retrieve test status: "+e.message;run.disabled=false;run.textContent="▶ RUN TESTS";}
-    }
     run.onclick=async()=>{
-      if(pollTimer)clearTimeout(pollTimer);
-      run.disabled=true;run.textContent="DISPATCHING…";
-      status.textContent="● SENDING TO GITHUB ACTIONS";out.textContent="Requesting a remote pytest run…";
+      run.disabled=true;run.textContent="RUNNING…";
+      status.textContent="● TESTS RUNNING";out.textContent="Starting the selected pytest suite on the server…";
       ["passed","failed","coverage","duration"].forEach(k=>metric(k,"…"));
       try{
+        const csrf=document.querySelector("#csrf-form [name=csrfmiddlewaretoken]")?.value||"";
         const access=document.getElementById("runner-access-code").value;
-        const r=await fetch("/api/run-tests/",{method:"POST",headers:{"Content-Type":"application/json","X-CSRFToken":csrf()},body:JSON.stringify({suite:suite,access_code:access})});
-        const d=await r.json();
-        if(!r.ok||!d.ok)throw new Error(d.error||"Could not start test run.");
-        if(d.remote){status.textContent="● QUEUED ON GITHUB ACTIONS";poll(d.request_id);return;}
-        out.textContent=d.output||"No output";
-        metric("passed",d.summary?.passed??"—");
-        metric("failed",(d.summary?.failed||0)+(d.summary?.errors||0));
-        metric("coverage",d.coverage==null?"N/A":d.coverage+"%");
-        metric("duration",d.duration==null?"—":d.duration+"s");
-        status.textContent=d.ok?"● ALL CHECKS PASSED":"● RUN FINISHED · REVIEW OUTPUT";
-        document.getElementById("terminal-state").textContent="EXIT CODE "+(d.exit_code??r.status);
-        run.disabled=false;run.textContent="▶ RUN TESTS";
-      }catch(e){
-        status.textContent="● RUN FAILED";out.textContent=e.message;
+        const response=await fetch("/api/run-tests/",{
+          method:"POST",
+          headers:{"Content-Type":"application/json","X-CSRFToken":csrf},
+          body:JSON.stringify({suite:suite,access_code:access})
+        });
+        const data=await response.json();
+        if(data.output)out.textContent=data.output;
+        else out.textContent=data.error||"The test runner returned no output.";
+        metric("passed",data.summary?.passed??"—");
+        metric("failed",(data.summary?.failed||0)+(data.summary?.errors||0));
+        metric("coverage",data.coverage==null?"N/A":data.coverage+"%");
+        metric("duration",data.duration==null?"—":data.duration+"s");
+        if(!response.ok||!data.ok){
+          status.textContent="● RUN FAILED · REVIEW OUTPUT";
+          document.getElementById("terminal-state").textContent="HTTP "+response.status;
+        }else{
+          status.textContent="● ALL CHECKS PASSED";
+          document.getElementById("terminal-state").textContent="EXIT CODE "+data.exit_code;
+        }
+      }catch(error){
+        status.textContent="● CONNECTION ERROR";
         document.getElementById("terminal-state").textContent="ERROR";
+        out.textContent="Could not reach the test runner. "+error.message;
+      }finally{
         run.disabled=false;run.textContent="▶ RUN TESTS";
       }
     };
